@@ -1,0 +1,19 @@
+---  
+apiVersion: "etcd.database.coreos.com/v1beta2"
+kind: "EtcdCluster"
+metadata:
+  name: "cilium-etcd"
+  namespace: kube-system
+spec:
+  size: 3
+  pod:
+    DNSTimeoutInSecond: 180
+    labels:
+      "io.cilium.fixed-identity": "kv-store"
+  version: "3.1.15"
+  TLS:
+    static:
+      member:
+        peerSecret: etcd-peer-tls
+        serverSecret: etcd-server-tls
+      operatorSecret: etcd-client-tls
