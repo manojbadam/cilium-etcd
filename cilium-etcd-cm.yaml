@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: etcd-server-tls
+  namespace: kube-system
+data:
+  server-ca.crt: "{{ETCD_CA}}"
+  server.key: "{{ETCD_OPERATOR_SERVER_KEY}}"
+  server.crt: "{{ETCD_OPERATOR_SERVER_CERT}}"
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: etcd-peer-tls
+  namespace: kube-system
+data:
+  peer-ca.crt: "{{ETCD_CA}}"
+  peer.key: "{{ETCD_OPERATOR_PEER_KEY}}"
+  peer.crt: "{{ETCD_OPERATOR_PEER_CERT}}"
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: etcd-client-tls
+  namespace: kube-system
+data:
+  etcd-client-ca.crt: "{{ETCD_CA}}"
+  etcd-client.key: "{{ETCD_OPERATOR_CLIENT_KEY}}"
+  etcd-client.crt: "{{ETCD_OPERATOR_CLIENT_CERT}}"
