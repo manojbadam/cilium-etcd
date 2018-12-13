@@ -1,0 +1,114 @@
+# Source: etcd-operator/templates/operator-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ethos-etcd-operator-sa
+  namespace: kube-system
+  labels:
+    app: etcd-operator
+---
+# Source: etcd-operator/templates/operator-cluster-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: ethos-etcd-operator-role
+  labels:
+    app: etcd-operator
+rules:
+- apiGroups:
+  - etcd.database.coreos.com
+  resources:
+  - etcdclusters
+  - etcdbackups
+  - etcdrestores
+  verbs:
+  - "*"
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+# Source: etcd-operator/templates/operator-clusterrole-binding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ethos-etcd-operator-rolebinding
+  labels:
+    app: etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: ethos-etcd-operator-sa
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ethos-etcd-operator-role
+---
+# Source: etcd-operator/templates/operator-deployment.yaml
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: ethos-etcd-operator
+  namespace: kube-system
+  labels:
+    app: etcd-operator
+spec:
+  selector:
+    matchLabels:
+      app: ethos-etcd-operator
+      io.cilium.fixed-identity: "kv-store"
+  replicas: 1
+  template:
+    metadata:
+      name: ethos-etcd-operator
+      labels:
+        app: ethos-etcd-operator
+        io.cilium.fixed-identity: "kv-store"
+    spec:
+      serviceAccountName: ethos-etcd-operator-sa
+      containers:
+      - name: ethos-etcd-operator
+        image: "quay.io/coreos/etcd-operator:v0.9.3" 
+        imagePullPolicy: Always
+        command:
+        - etcd-operator
+        env:
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
